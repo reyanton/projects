@@ -27,6 +27,10 @@ def cargardatos(source:str, dbdata:str,destination:str, dbdestination:str, dia, 
         print("Recalculando día....")
         sql_rec = pd.read_sql("exec spUpdHisVentas '" + dia +"'", con=engine)
         
+        fsucces = open( pathuser + '/' + 'succes.log', 'w')
+        fsucces.write(str(datetime.now().strftime("%d/%m/%Y %H:%M:%S")) + " - Datos cargados correctamente, recalculo del día : " + dia)
+        fsucces.close()
+
     except IOError as e:
         ferror = open( pathuser + '/' + 'error.log', 'w')
         ferror.write(str(e))
