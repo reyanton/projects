@@ -1,0 +1,11 @@
+{
+   "Data":[	
+   {
+      "source":"172.20.1.67\\SQL67",
+      "dbsource":"NOVELTY",
+      "destination":"ING-ICG5\\ING05",
+      "dbdestination":"NWD"
+   }
+   ]
+
+ }
