@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="1/4/2021 4:31:53 PM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="ING-ICG5"
+  DTS:CreatorName="GDAVID\ReinaldoVillarroel"
+  DTS:DTSID="{718A03D0-9CC8-4335-B642-F500FE308C4F}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="15.0.2000.93"
+  DTS:LocaleID="6154"
+  DTS:ObjectName="Package"
+  DTS:PackageType="5"
+  DTS:VersionGUID="{17F39D6F-A57F-4A76-B55D-CC85F78464FC}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:Variables />
+  <DTS:Executables />
+</DTS:Executable>

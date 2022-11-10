@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<DTS:ConnectionManager xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:ObjectName="Proyectos 1"
+  DTS:DTSID="{7DE8466A-9BB1-4E18-9A8E-210C3ADE6AFC}"
+  DTS:CreationName="FILE">
+  <DTS:ObjectData>
+    <DTS:ConnectionManager
+      DTS:ConnectionString="C:\Proyectos\THE_CHILDRENS_PLACE_backup_2020_04_07_010502_5374674.bak" />
+  </DTS:ObjectData>
+</DTS:ConnectionManager>

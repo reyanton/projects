@@ -1,0 +1,593 @@
+<?xml version="1.0"?>
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package"
+  DTS:CreationDate="2/5/2019 11:02:10 AM"
+  DTS:CreationName="Microsoft.Package"
+  DTS:CreatorComputerName="ING-ICG05"
+  DTS:CreatorName="GDAVID\ReinaldoVillarroel"
+  DTS:DTSID="{36AD0B71-9D73-4182-8FA4-F8F2D2F0C42F}"
+  DTS:ExecutableType="Microsoft.Package"
+  DTS:LastModifiedProductVersion="15.0.2000.93"
+  DTS:LocaleID="6154"
+  DTS:ObjectName="PromosVSFA"
+  DTS:PackageType="5"
+  DTS:VersionBuild="45"
+  DTS:VersionGUID="{27686FB6-19DF-4074-A890-2FD3C87A0894}">
+  <DTS:Property
+    DTS:Name="PackageFormatVersion">8</DTS:Property>
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[Excel Connection Manager]"
+      DTS:CreationName="EXCEL"
+      DTS:DTSID="{329C28BF-4E3B-4FEE-B699-E16E9C664075}"
+      DTS:ObjectName="Excel Connection Manager">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\Users\reinaldovillarroel\Desktop\Reinaldo Laptop\Respaldo\Respaldos\VSFA-Promociones\Promociones.xlsx;Extended Properties=&quot;EXCEL 12.0 XML;HDR=YES&quot;;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager
+      DTS:refId="Package.ConnectionManagers[ING-ICG05\SQL2017DEV.VSFA1]"
+      DTS:CreationName="ADO.NET:System.Data.SqlClient.SqlConnection, System.Data, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089"
+      DTS:DTSID="{20322CF0-6D4B-4170-A7DF-57A2119BAF02}"
+      DTS:ObjectName="ING-ICG05\SQL2017DEV.VSFA1">
+      <DTS:ObjectData>
+        <DTS:ConnectionManager
+          DTS:ConnectionString="Data Source=ING-ICG5;Initial Catalog=VSFC_PMA;Integrated Security=True;Application Name=SSIS-PromosVSFA-{20322CF0-6D4B-4170-A7DF-57A2119BAF02}ING-ICG05\SQL2017DEV.VSFA1;" />
+      </DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables />
+  <DTS:Executables>
+    <DTS:Executable
+      DTS:refId="Package\Actualizar ICG"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{042BC7A0-6C7D-47C1-AC96-D27C6B6D3278}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Actualizar ICG"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{20322CF0-6D4B-4170-A7DF-57A2119BAF02}"
+          SQLTask:SqlStatementSource="--ACTUALIZAR CAMPOS LIBRES y Procesados&#xA;Declare @Tabla table (&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;IdRegistro int identity not null,&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Referencia varchar(20),&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;CodArticulo bigint,&#xA;&#x9;&#x9;&#x9;&#x9;&#x9;&#x9;Promo varchar(50)&#xA;&#x9;&#x9;&#x9;&#x9;&#x9; )&#xA;&#xA;insert into @Tabla(Referencia,CodArticulo,Promo)&#xA;Select a.REFPROVEEDOR, a.CODARTICULO,  (select PromoICG from PromocionesMarca where UPPER(PromoTienda) = UPPER(pt.Promocion)) promo&#xA;&#x9;&#x9;from ARTICULOS a&#xA;&#x9;&#x9;&#x9;inner join ARTICULOSCAMPOSLIBRES acl on acl.CODARTICULO = a.CODARTICULO&#xA;&#x9;&#x9;&#x9;inner join PromocionesTienda pt on pt.Referencia = a.REFPROVEEDOR collate Latin1_General_CS_AI&#xA;&#x9;&#x9;where pt.procesado = 0 and acl.PROMO01 is null and (select PromoICG from PromocionesMarca where UPPER(PromoTienda) = UPPER(pt.Promocion)) is not null&#xA;&#xA;Begin tran&#xA;&#x9;Begin try&#xA;&#x9;&#x9;update ARTICULOSCAMPOSLIBRES set PROMO01 = Promo&#xA;&#x9;&#x9;from ARTICULOSCAMPOSLIBRES a&#xA;&#x9;&#x9;&#x9;inner join @Tabla b on b.CodArticulo = a.CODARTICULO&#xA;&#xA;&#x9;&#x9;update PromocionesTienda set Procesado = 1&#xA;&#x9;&#x9;from PromocionesTienda a&#xA;&#x9;&#x9;&#x9;inner join @Tabla b on b.Referencia = a.Referencia&#xA;&#x9;&#x9;where promo is not null&#xA;&#xA;&#x9;&#x9;commit tran&#xA;&#x9;end try&#xA;&#x9;begin catch&#xA;&#x9;&#x9;rollback tran&#xA;&#x9;end catch" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Cargar Excel Marca"
+      DTS:CreationName="Microsoft.Pipeline"
+      DTS:Description="Data Flow Task"
+      DTS:DTSID="{A5822B79-7762-4852-BD97-DAB8A85A625A}"
+      DTS:ExecutableType="Microsoft.Pipeline"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Cargar Excel Marca"
+      DTS:TaskContact="Performs high-performance data extraction, transformation and loading;Microsoft Corporation; Microsoft SQL Server; (C) 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <pipeline
+          version="1">
+          <components>
+            <component
+              refId="Package\Cargar Excel Marca\ADO NET Destination"
+              componentClassID="Microsoft.ManagedComponentHost"
+              contactInfo="Loads data into an ADO.NET-compliant database that uses a database table or view. Load data into a new or existing table. For example, use an ADO.NET provider for ODBC to load data into an ODBC destination.;Microsoft Corporation; Microsoft SQL Server; © Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;2"
+              description="Loads data into an ADO.NET-compliant database that uses a database table or view. Load data into a new or existing table. For example, use an ADO.NET provider for ODBC to load data into an ODBC destination."
+              name="ADO NET Destination"
+              usesDispositions="true"
+              version="2">
+              <properties>
+                <property
+                  dataType="System.String"
+                  description="The Destination database table name."
+                  expressionType="Notify"
+                  name="TableOrViewName"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor">"dbo"."PromocionesExcel"</property>
+                <property
+                  dataType="System.Int32"
+                  description="Specify the number of rows per batch. The default is 0 which uses the same size as SSIS internal buffer. "
+                  expressionType="Notify"
+                  name="BatchSize">0</property>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out. A value of 0 indicates infinite time-out. "
+                  expressionType="Notify"
+                  name="CommandTimeout">30</property>
+                <property
+                  dataType="System.Boolean"
+                  description="Specifies whether to use the SqlBulkCopy interface to improve the performance of bulk insert operations. Only certain providers support this interface."
+                  expressionType="Notify"
+                  name="UseBulkInsertWhenPossible">true</property>
+                <property
+                  dataType="System.String"
+                  name="UserComponentTypeName">Microsoft.ADONETDestination</property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Cargar Excel Marca\ADO NET Destination.Connections[IDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[ING-ICG05\SQL2017DEV.VSFA1]"
+                  connectionManagerRefId="Package.ConnectionManagers[ING-ICG05\SQL2017DEV.VSFA1]"
+                  description="Managed connection manager"
+                  name="IDbConnection" />
+              </connections>
+              <inputs>
+                <input
+                  refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input]"
+                  errorRowDisposition="FailComponent"
+                  hasSideEffects="true"
+                  name="ADO NET Destination Input">
+                  <inputColumns>
+                    <inputColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].Columns[Promotion]"
+                      cachedDataType="wstr"
+                      cachedLength="255"
+                      cachedName="Promotion"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[Promocion]"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Promotion]" />
+                    <inputColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].Columns[Date]"
+                      cachedDataType="wstr"
+                      cachedLength="50"
+                      cachedName="Date"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[FechaExcel]"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Date]" />
+                    <inputColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].Columns[reference]"
+                      cachedDataType="r8"
+                      cachedName="reference"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[Referencia]"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[reference]" />
+                  </inputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[IdRegistro]"
+                      dataType="i8"
+                      name="IdRegistro" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[FechaExcel]"
+                      dataType="wstr"
+                      length="255"
+                      name="FechaExcel" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[Referencia]"
+                      dataType="wstr"
+                      length="14"
+                      name="Referencia" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[Promocion]"
+                      dataType="wstr"
+                      length="256"
+                      name="Promocion" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[Procesado]"
+                      dataType="bool"
+                      name="Procesado" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input].ExternalColumns[FechaRegistro]"
+                      dataType="dbTimeStamp"
+                      name="FechaRegistro" />
+                  </externalMetadataColumns>
+                </input>
+              </inputs>
+              <outputs>
+                <output
+                  refId="Package\Cargar Excel Marca\ADO NET Destination.Outputs[ADO NET Destination Error Output]"
+                  exclusionGroup="1"
+                  isErrorOut="true"
+                  name="ADO NET Destination Error Output"
+                  synchronousInputId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input]">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Outputs[ADO NET Destination Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Cargar Excel Marca\ADO NET Destination.Outputs[ADO NET Destination Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\ADO NET Destination.Outputs[ADO NET Destination Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Cargar Excel Marca\ADO NET Destination.Outputs[ADO NET Destination Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+            <component
+              refId="Package\Cargar Excel Marca\Excel Source"
+              componentClassID="Microsoft.ExcelSource"
+              contactInfo="Excel Source;Microsoft Corporation; Microsoft SQL Server; (C) Microsoft Corporation; All Rights Reserved; http://www.microsoft.com/sql/support;1"
+              description="Excel Source"
+              name="Excel Source"
+              usesDispositions="true"
+              version="1">
+              <properties>
+                <property
+                  dataType="System.Int32"
+                  description="The number of seconds before a command times out.  A value of 0 indicates an infinite time-out."
+                  name="CommandTimeout">0</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the name of the database object used to open a rowset."
+                  name="OpenRowset">Agregados$</property>
+                <property
+                  dataType="System.String"
+                  description="Specifies the variable that contains the name of the database object used to open a rowset."
+                  name="OpenRowsetVariable"></property>
+                <property
+                  dataType="System.String"
+                  description="The SQL command to be executed."
+                  name="SqlCommand"
+                  UITypeEditor="Microsoft.DataTransformationServices.Controls.ModalMultilineStringEditor"></property>
+                <property
+                  dataType="System.String"
+                  description="The variable that contains the SQL command to be executed."
+                  name="SqlCommandVariable"></property>
+                <property
+                  dataType="System.Int32"
+                  description="Specifies the mode used to access the database."
+                  name="AccessMode"
+                  typeConverter="AccessMode">0</property>
+                <property
+                  dataType="System.String"
+                  description="The mapping from parameters in the SQL command to variables."
+                  name="ParameterMapping"></property>
+              </properties>
+              <connections>
+                <connection
+                  refId="Package\Cargar Excel Marca\Excel Source.Connections[OleDbConnection]"
+                  connectionManagerID="Package.ConnectionManagers[Excel Connection Manager]"
+                  connectionManagerRefId="Package.ConnectionManagers[Excel Connection Manager]"
+                  description="The OLE DB runtime connection used to access the database."
+                  name="OleDbConnection" />
+              </connections>
+              <outputs>
+                <output
+                  refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output]"
+                  name="Excel Source Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Promotion]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversion"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Promotion]"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Promotion]"
+                      name="Promotion"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Sub Brand]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Sub Brand]"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Sub Brand]"
+                      name="Sub Brand"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Date]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Date]"
+                      length="50"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Date]"
+                      name="Date"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[reference]"
+                      dataType="r8"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[reference]"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[reference]"
+                      name="reference"
+                      truncationRowDisposition="FailComponent" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Article]"
+                      dataType="wstr"
+                      errorOrTruncationOperation="Conversión"
+                      errorRowDisposition="FailComponent"
+                      externalMetadataColumnId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Article]"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].Columns[Article]"
+                      name="Article"
+                      truncationRowDisposition="FailComponent" />
+                  </outputColumns>
+                  <externalMetadataColumns
+                    isUsed="True">
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Promotion]"
+                      dataType="wstr"
+                      length="255"
+                      name="Promotion" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Sub Brand]"
+                      dataType="wstr"
+                      length="255"
+                      name="Sub Brand" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Date]"
+                      dataType="wstr"
+                      length="255"
+                      name="Date" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[reference]"
+                      dataType="r8"
+                      name="reference" />
+                    <externalMetadataColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output].ExternalColumns[Article]"
+                      dataType="wstr"
+                      length="255"
+                      name="Article" />
+                  </externalMetadataColumns>
+                </output>
+                <output
+                  refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output]"
+                  isErrorOut="true"
+                  name="Excel Source Error Output">
+                  <outputColumns>
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Date]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Date]"
+                      name="Date" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[reference]"
+                      dataType="r8"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[reference]"
+                      name="reference" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Article]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Article]"
+                      name="Article" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorCode]"
+                      dataType="i4"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorCode]"
+                      name="ErrorCode"
+                      specialFlags="1" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorColumn]"
+                      dataType="i4"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[ErrorColumn]"
+                      name="ErrorColumn"
+                      specialFlags="2" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Sub Brand]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Sub Brand]"
+                      name="Sub Brand" />
+                    <outputColumn
+                      refId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Promotion]"
+                      dataType="wstr"
+                      length="255"
+                      lineageId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Error Output].Columns[Promotion]"
+                      name="Promotion" />
+                  </outputColumns>
+                  <externalMetadataColumns />
+                </output>
+              </outputs>
+            </component>
+          </components>
+          <paths>
+            <path
+              refId="Package\Cargar Excel Marca.Paths[Excel Source Output]"
+              endId="Package\Cargar Excel Marca\ADO NET Destination.Inputs[ADO NET Destination Input]"
+              name="Excel Source Output"
+              startId="Package\Cargar Excel Marca\Excel Source.Outputs[Excel Source Output]" />
+          </paths>
+        </pipeline>
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Cargar Promociones"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{10C71833-7C69-4D20-8B89-81433432A549}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Cargar Promociones"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="0">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{20322CF0-6D4B-4170-A7DF-57A2119BAF02}"
+          SQLTask:SqlStatementSource="--INSERTAR NUEVAS PROMOCIONES&#xA;insert into PromocionesTienda(FechaExcel, Referencia, Promocion)&#xA;select a.FechaExcel, a.Referencia, (select PromoTienda from PromocionesMarca where UPPER(PromoMarca) = UPPER(a.Promocion)) Promo&#xA;from ExcelMarca a&#xA;&#x9;left join PromocionesTienda b on a.Referencia = b.Referencia&#xA;where b.Referencia is null&#xA;&#xA;&#xA;--ACTUALIZAR PROMOCIONES&#xA;Begin tran&#xA;&#x9;Begin try&#xA;&#x9;&#x9;update PromocionesTienda set promocion = (select PromoTienda from PromocionesMarca where UPPER(PromoMarca) = UPPER(a.Promocion)), FechaRegistro = getdate(), Procesado = 0&#xA;&#x9;&#x9;from ExcelMarca a&#xA;&#x9;&#x9;&#x9;inner join PromocionesTienda b on a.Referencia = b.Referencia&#xA;&#x9;&#x9;where  (select PromoTienda from PromocionesMarca where UPPER(PromoMarca) = UPPER(a.Promocion)) &lt;&gt; b.Promocion&#xA;&#xA;&#x9;&#x9;commit tran&#xA;&#x9;end try&#xA;&#x9;begin catch&#xA;&#x9;&#x9;rollback tran&#xA;&#x9;end catch&#xA;" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable
+      DTS:refId="Package\Limpiar Tabla Excel"
+      DTS:CreationName="Microsoft.ExecuteSQLTask"
+      DTS:Description="Execute SQL Task"
+      DTS:DTSID="{7EACEE0A-F572-4E76-8005-87F83B71F576}"
+      DTS:ExecutableType="Microsoft.ExecuteSQLTask"
+      DTS:LocaleID="-1"
+      DTS:ObjectName="Limpiar Tabla Excel"
+      DTS:TaskContact="Execute SQL Task; Microsoft Corporation; SQL Server 2012; © 2007 Microsoft Corporation; All Rights Reserved;http://www.microsoft.com/sql/support/default.asp;1"
+      DTS:ThreadHint="1">
+      <DTS:Variables />
+      <DTS:ObjectData>
+        <SQLTask:SqlTaskData
+          SQLTask:Connection="{20322CF0-6D4B-4170-A7DF-57A2119BAF02}"
+          SQLTask:SqlStatementSource="Truncate table PromocionesExcel" xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask" />
+      </DTS:ObjectData>
+    </DTS:Executable>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint]"
+      DTS:CreationName=""
+      DTS:DTSID="{06A44DD4-ED55-4514-9039-9EE15368DDF6}"
+      DTS:From="Package\Limpiar Tabla Excel"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint"
+      DTS:To="Package\Cargar Excel Marca" />
+    <DTS:PrecedenceConstraint
+      DTS:refId="Package.PrecedenceConstraints[Constraint 2]"
+      DTS:CreationName=""
+      DTS:DTSID="{D0FF2180-A4CE-49D0-BEEB-063500EA8AA4}"
+      DTS:From="Package\Cargar Promociones"
+      DTS:LogicalAnd="True"
+      DTS:ObjectName="Constraint 2"
+      DTS:To="Package\Actualizar ICG" />
+  </DTS:PrecedenceConstraints>
+  <DTS:DesignTimeProperties><![CDATA[<?xml version="1.0"?>
+<!--Esta sección CDATA contiene la información de diseño del paquete. Esta sección incluye información como, por ejemplo, las coordenadas (x,y), el ancho y el alto.-->
+<!--Si edita manualmente esta sección y comete un error, puede eliminarlo. -->
+<!--El paquete podrá cargarse normalmente, pero se perderá la información de diseño anterior y el diseñador reorganizará los elementos automáticamente en la superficie de diseño.-->
+<Objects
+  Version="8">
+  <!--Cada uno de los nodos siguientes contiene propiedades que no afectan al comportamiento en tiempo de ejecución.-->
+  <Package
+    design-time-name="Package">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="8" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="145,42"
+          Id="Package\Actualizar ICG"
+          TopLeft="394,471" />
+        <NodeLayout
+          Size="169,42"
+          Id="Package\Cargar Excel Marca"
+          TopLeft="398,209" />
+        <NodeLayout
+          Size="173,42"
+          Id="Package\Cargar Promociones"
+          TopLeft="383,340" />
+        <NodeLayout
+          Size="176,42"
+          Id="Package\Limpiar Tabla Excel"
+          TopLeft="397,44" />
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint]"
+          TopLeft="483.75,86">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,123"
+              Start="0,0"
+              End="0,115.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,115.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+        <EdgeLayout
+          Id="Package.PrecedenceConstraints[Constraint 2]"
+          TopLeft="468,382">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="0,89"
+              Start="0,0"
+              End="0,81.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,81.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </Package>
+  <TaskHost
+    design-time-name="Package\Cargar Excel Marca">
+    <LayoutInfo>
+      <GraphLayout
+        Capacity="4" xmlns="clr-namespace:Microsoft.SqlServer.IntegrationServices.Designer.Model.Serialization;assembly=Microsoft.SqlServer.IntegrationServices.Graph" xmlns:mssgle="clr-namespace:Microsoft.SqlServer.Graph.LayoutEngine;assembly=Microsoft.SqlServer.Graph" xmlns:assembly="http://schemas.microsoft.com/winfx/2006/xaml">
+        <NodeLayout
+          Size="179,42"
+          Id="Package\Cargar Excel Marca\ADO NET Destination"
+          TopLeft="378,306" />
+        <NodeLayout
+          Size="139,42"
+          Id="Package\Cargar Excel Marca\Excel Source"
+          TopLeft="420,107" />
+        <EdgeLayout
+          Id="Package\Cargar Excel Marca.Paths[Excel Source Output]"
+          TopLeft="489.5,149">
+          <EdgeLayout.Curve>
+            <mssgle:Curve
+              StartConnector="{assembly:Null}"
+              EndConnector="-22,157"
+              Start="0,0"
+              End="-22,149.5">
+              <mssgle:Curve.Segments>
+                <mssgle:SegmentCollection
+                  Capacity="5">
+                  <mssgle:LineSegment
+                    End="0,74.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="0,74.5"
+                    Point2="0,78.5"
+                    Point3="-4,78.5" />
+                  <mssgle:LineSegment
+                    End="-18,78.5" />
+                  <mssgle:CubicBezierSegment
+                    Point1="-18,78.5"
+                    Point2="-22,78.5"
+                    Point3="-22,82.5" />
+                  <mssgle:LineSegment
+                    End="-22,149.5" />
+                </mssgle:SegmentCollection>
+              </mssgle:Curve.Segments>
+            </mssgle:Curve>
+          </EdgeLayout.Curve>
+          <EdgeLayout.Labels>
+            <EdgeLabelCollection />
+          </EdgeLayout.Labels>
+        </EdgeLayout>
+      </GraphLayout>
+    </LayoutInfo>
+  </TaskHost>
+  <PipelineComponentMetadata
+    design-time-name="Package\Cargar Excel Marca\ADO NET Destination">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+  <PipelineComponentMetadata
+    design-time-name="Package\Cargar Excel Marca\Excel Source">
+    <Properties>
+      <Property>
+        <Name>DataSourceViewID</Name>
+      </Property>
+      <Property>
+        <Name>TableInfoObjectType</Name>
+        <Value
+          type="q2:string">Table</Value>
+      </Property>
+    </Properties>
+  </PipelineComponentMetadata>
+</Objects>]]></DTS:DesignTimeProperties>
+</DTS:Executable>
